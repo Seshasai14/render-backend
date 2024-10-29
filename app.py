@@ -18,8 +18,21 @@ with app.app_context():
 
 @app.route('/api/developers', methods=['GET'])
 def get_developers():
-    developers = Developer.query.all()
-    return jsonify([developer.to_dict() for developer in developers])
+    name = request.args.get('name', '').strip()  # Get the name filter from the query parameters
+    domain = request.args.get('domain', '').strip()  # Get the domain filter from the query parameters
+
+    query = Developer.query  # Start with all developers
+
+    # Filter by name if provided
+    if name:
+        query = query.filter(Developer.name.ilike(f'%{name}%'))  # Case-insensitive search
+
+    # Filter by domain if provided
+    if domain:
+        query = query.filter(Developer.domain_expertise.ilike(f'%{domain}%'))  # Case-insensitive domain filtering
+
+    developers = query.all()  # Execute the query
+    return jsonify([developer.to_dict() for developer in developers])  # Return the filtered developers
 
 @app.route('/api/developers', methods=['POST'])
 def add_developer():
