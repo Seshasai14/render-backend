@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+import json
 from models import db, Developer
 
 app = Flask(__name__)
@@ -75,7 +76,7 @@ def add_default_developers():
                 branch=dev['branch'],
                 domain_mail_id=dev['domain_mail_id'],
                 domain_expertise=dev['domain_expertise'],
-                projects=dev['projects']
+                projects=json.dumps(dev['projects'])  # Convert list to JSON string
             )
             db.session.add(new_developer)
 
@@ -109,7 +110,7 @@ def add_developer():
         branch=data['branch'],
         domain_mail_id=data['domain_mail_id'],
         domain_expertise=data['domain_expertise'],
-        projects=data['projects']
+        projects=json.dumps(data['projects'])  # Convert list to JSON string
     )
     db.session.add(new_developer)
     db.session.commit()
@@ -129,7 +130,7 @@ def update_developer(id):
     developer.branch = data['branch']
     developer.domain_mail_id = data['domain_mail_id']
     developer.domain_expertise = data['domain_expertise']
-    developer.projects = data['projects']
+    developer.projects = json.dumps(data['projects'])  # Convert list to JSON string
 
     db.session.commit()
     return jsonify(developer.to_dict())
