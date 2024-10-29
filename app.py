@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
-from flask_cors import CORS  # Import CORS
+from flask_cors import CORS
 from models import db, Developer
 
 app = Flask(__name__)
@@ -13,26 +13,93 @@ db.init_app(app)
 # Enable CORS for specific origins
 CORS(app, origins=["http://localhost:5173", "http://seshasai.tech"])
 
+# Function to add default developers
+def add_default_developers():
+    default_developers = [
+        {
+            "name": "Archana",
+            "branch": "Computer Science And Engineering",
+            "domain_mail_id": "21131A05A1@sairam.ac.in",
+            "domain_expertise": "Backend Development",
+            "projects": ["Personal Blogging Platform API", "Expense Tracker API"]
+        },
+        {
+            "name": "Swayam Krishna",
+            "branch": "Mechanical Engineering",
+            "domain_mail_id": "21131a03H7@gvpce.ac.in",
+            "domain_expertise": "CAD",
+            "projects": ["Motor Building", "Motor Repairing"]
+        },
+        {
+            "name": "Sesha Sai",
+            "branch": "Computer Science And Engineering",
+            "domain_mail_id": "21131A05G1@gvpce.ac.in",
+            "domain_expertise": "Frontend Development",
+            "projects": ["Weather Application", "Chat Application"]
+        },
+        {
+            "name": "Vivek Vardhan",
+            "branch": "Computer Science And Engineering",
+            "domain_mail_id": "21131A05H8@gvpce.ac.in",
+            "domain_expertise": "Backend Development",
+            "projects": ["Markdown Note-taking App", "URL Shortening Service"]
+        },
+        {
+            "name": "Kusuma",
+            "branch": "Computer Science And Engineering",
+            "domain_mail_id": "21131A05H6@gvpce.ac.in",
+            "domain_expertise": "Mobile Development",
+            "projects": ["Blood Donation App", "Expense Tracker App"]
+        },
+        {
+            "name": "Mounika",
+            "branch": "Computer Science And Engineering",
+            "domain_mail_id": "21131A05H3@gvpce.ac.in",
+            "domain_expertise": "Mobile Developer",
+            "projects": ["Calculator App", "Social Media App"]
+        },
+        {
+            "name": "Arun",
+            "branch": "Computer Science And Engineering",
+            "domain_mail_id": "gnaneshkumargurrala@gmail.com",
+            "domain_expertise": "Full Stack Development",
+            "projects": ["Restaurant Site", "E Commerce Site"]
+        }
+    ]
+
+    for dev in default_developers:
+        # Check if developer already exists before adding
+        if not Developer.query.filter_by(name=dev['name']).first():
+            new_developer = Developer(
+                name=dev['name'],
+                branch=dev['branch'],
+                domain_mail_id=dev['domain_mail_id'],
+                domain_expertise=dev['domain_expertise'],
+                projects=dev['projects']
+            )
+            db.session.add(new_developer)
+
+    db.session.commit()
+
 with app.app_context():
     db.create_all()  # Create the database tables
+    add_default_developers()  # Add default developers
 
 @app.route('/api/developers', methods=['GET'])
 def get_developers():
-    name = request.args.get('name', '').strip()  # Get the name filter from the query parameters
-    domain = request.args.get('domain', '').strip()  # Get the domain filter from the query parameters
+    name = request.args.get('name', '').strip()
+    domain = request.args.get('domain', '').strip()
 
-    query = Developer.query  # Start with all developers
+    query = Developer.query
 
-    # Filter by name if provided
     if name:
-        query = query.filter(Developer.name.ilike(f'%{name}%'))  # Case-insensitive search
+        query = query.filter(Developer.name.ilike(f'%{name}%'))
 
-    # Filter by domain if provided
     if domain:
-        query = query.filter(Developer.domain_expertise.ilike(f'%{domain}%'))  # Case-insensitive domain filtering
+        query = query.filter(Developer.domain_expertise.ilike(f'%{domain}%'))
 
-    developers = query.all()  # Execute the query
-    return jsonify([developer.to_dict() for developer in developers])  # Return the filtered developers
+    developers = query.all()
+    return jsonify([developer.to_dict() for developer in developers])
 
 @app.route('/api/developers', methods=['POST'])
 def add_developer():
