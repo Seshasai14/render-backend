@@ -1,7 +1,6 @@
-# flask_api/app.py
-
 from flask import Flask, jsonify, request
-from flask_sqlalchemy import SQLAlchemy 
+from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS  # Import CORS
 from models import db, Developer
 
 app = Flask(__name__)
@@ -10,6 +9,9 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
+
+# Enable CORS for specific origins
+CORS(app, origins=["http://localhost:5173", "http://seshasai.tech"])
 
 with app.app_context():
     db.create_all()  # Create the database tables
