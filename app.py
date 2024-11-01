@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, make_response
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import json
@@ -12,7 +12,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
 # Enable CORS for specific origins
-CORS(app, origins=["http://localhost:5173", "http://seshasai.tech"])
+CORS(app, resources={r"/api/*": {"origins": ["http://localhost:5173", "http://seshasai.tech"]}})
 
 # Function to add default developers
 def add_default_developers():
@@ -69,7 +69,6 @@ def add_default_developers():
     ]
 
     for dev in default_developers:
-        # Check if developer already exists before adding
         if not Developer.query.filter_by(name=dev['name']).first():
             new_developer = Developer(
                 name=dev['name'],
@@ -100,7 +99,9 @@ def get_developers():
         query = query.filter(Developer.domain_expertise.ilike(f'%{domain}%'))
 
     developers = query.all()
-    return jsonify([developer.to_dict() for developer in developers])
+    response = make_response(jsonify([developer.to_dict() for developer in developers]))
+    response.headers["Access-Control-Allow-Origin"] = "http://seshasai.tech"  # Explicitly set for debugging
+    return response
 
 @app.route('/api/developers', methods=['POST'])
 def add_developer():
@@ -114,12 +115,16 @@ def add_developer():
     )
     db.session.add(new_developer)
     db.session.commit()
-    return jsonify(new_developer.to_dict()), 201
+    response = make_response(jsonify(new_developer.to_dict()), 201)
+    response.headers["Access-Control-Allow-Origin"] = "http://seshasai.tech"
+    return response
 
 @app.route('/api/developers/<int:id>', methods=['GET'])
 def get_developer(id):
     developer = Developer.query.get_or_404(id)
-    return jsonify(developer.to_dict())
+    response = make_response(jsonify(developer.to_dict()))
+    response.headers["Access-Control-Allow-Origin"] = "http://seshasai.tech"
+    return response
 
 @app.route('/api/developers/<int:id>', methods=['PUT'])
 def update_developer(id):
@@ -133,14 +138,18 @@ def update_developer(id):
     developer.projects = json.dumps(data['projects'])  # Convert list to JSON string
 
     db.session.commit()
-    return jsonify(developer.to_dict())
+    response = make_response(jsonify(developer.to_dict()))
+    response.headers["Access-Control-Allow-Origin"] = "http://seshasai.tech"
+    return response
 
 @app.route('/api/developers/<int:id>', methods=['DELETE'])
 def delete_developer(id):
     developer = Developer.query.get_or_404(id)
     db.session.delete(developer)
     db.session.commit()
-    return jsonify({"message": "Developer deleted successfully!"})
+    response = make_response(jsonify({"message": "Developer deleted successfully!"}))
+    response.headers["Access-Control-Allow-Origin"] = "http://seshasai.tech"
+    return response
 
 if __name__ == '__main__':
     app.run(debug=True)
