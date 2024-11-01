@@ -85,23 +85,30 @@ with app.app_context():
     db.create_all()  # Create the database tables
     add_default_developers()  # Add default developers
 
+from sqlalchemy import or_
+from flask import request, jsonify, make_response
+
 @app.route('/api/developers', methods=['GET'])
 def get_developers():
-    name = request.args.get('name', '').strip()
-    domain = request.args.get('domain', '').strip()
+    search_term = request.args.get('searchTerm', '').strip()
 
     query = Developer.query
 
-    if name:
-        query = query.filter(Developer.name.ilike(f'%{name}%'))
-
-    if domain:
-        query = query.filter(Developer.domain_expertise.ilike(f'%{domain}%'))
+    if search_term:
+        query = query.filter(
+            or_(
+                Developer.name.ilike(f'%{search_term}%'),
+                Developer.domain_expertise.ilike(f'%{search_term}%'),
+                Developer.branch.ilike(f'%{search_term}%'),
+                Developer.projects.ilike(f'%{search_term}%')  
+            )
+        )
 
     developers = query.all()
     response = make_response(jsonify([developer.to_dict() for developer in developers]))
-    response.headers["Access-Control-Allow-Origin"] = "http://seshasai.tech"  # Explicitly set for debugging
+    response.headers["Access-Control-Allow-Origin"] = "http://seshasai.tech"  
     return response
+
 
 @app.route('/api/developers', methods=['POST'])
 def add_developer():
