@@ -12,7 +12,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
 # Enable CORS for specific origins
-CORS(app, resources={r"/api/*": {"origins": ["http://localhost:5173", "http://seshasai.tech"]}})
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 # Function to add default developers
 def add_default_developers():
